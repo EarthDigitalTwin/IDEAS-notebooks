@@ -7,12 +7,12 @@ import requests
 dt_format = "%Y-%m-%dT%H:%M:%SZ"
 
 '''
-SDAP endpoint functions
+IDEAS endpoint functions
 '''
 
 def spatial_timeseries(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.Dataset:
     '''
-    Makes request to timeSeriesSpark SDAP endpoint
+    Makes request to timeSeriesSpark IDEAS endpoint
     '''
     url = '{}/timeSeriesSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}&lowPassFilter=False'.\
         format(base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
@@ -21,8 +21,8 @@ def spatial_timeseries(base_url: str, dataset: str, bb: dict, start_time: dateti
     # Display some information about the job
     print('url\n', url); print()
 
-    # Query SDAP to compute the time averaged map
-    print("Waiting for response from SDAP...", end="")
+    # Query IDEAS to compute the time averaged map
+    print("Waiting for response from IDEAS...", end="")
     start = time.perf_counter()
     ts_json = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
@@ -30,7 +30,7 @@ def spatial_timeseries(base_url: str, dataset: str, bb: dict, start_time: dateti
 
 def temporal_variance(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
     '''
-    Makes request to varianceSpark SDAP endpoint
+    Makes request to varianceSpark IDEAS endpoint
     '''
     params = {
         'ds': dataset,
@@ -49,8 +49,8 @@ def temporal_variance(base_url: str, dataset: str, bb: dict, start_time: datetim
     # Display some information about the job
     print('url\n', url); print()
     
-    # Query SDAP to compute the time averaged map
-    print("Waiting for response from SDAP... ", end="")
+    # Query IDEAS to compute the time averaged map
+    print("Waiting for response from IDEAS... ", end="")
     start = time.perf_counter()
     var_json = requests.get(url, params=params, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
@@ -58,7 +58,7 @@ def temporal_variance(base_url: str, dataset: str, bb: dict, start_time: datetim
 
 def data_subsetting(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
     '''
-    Makes request to datainbounds SDAP endpoint
+    Makes request to datainbounds IDEAS endpoint
     '''
     url = '{}/datainbounds?ds={}&b={},{},{},{}&startTime={}&endTime={}&lowPassFilter=False'.format(
         base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
@@ -66,7 +66,7 @@ def data_subsetting(base_url: str, dataset: str, bb: dict, start_time: datetime,
     
     print('url\n', url); print()
     
-    print("Waiting for response from SDAP...", end="")
+    print("Waiting for response from IDEAS...", end="")
     start = time.perf_counter()
     var_json = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
@@ -82,7 +82,7 @@ def max_min_map_spark(base_url: str, dataset: str, bb: dict, start_time: datetim
 
     print('url\n', url); print()
 
-    print("Waiting for response from SDAP... ", end="")
+    print("Waiting for response from IDEAS... ", end="")
     start = time.perf_counter()
     resp = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
@@ -99,7 +99,7 @@ def daily_diff(base_url: str, dataset: str, clim: str, bb: dict, start_time: dat
 
     print('url\n', url); print()
 
-    print("Waiting for response from SDAP... ", end="")
+    print("Waiting for response from IDEAS... ", end="")
     start = time.perf_counter()
     resp = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
@@ -115,7 +115,7 @@ def temporal_mean(base_url: str, dataset: str, bb: dict, start_time: datetime, e
 
     print('url\n', url); print()
 
-    print("Waiting for response from SDAP... ", end="")
+    print("Waiting for response from IDEAS... ", end="")
     start = time.perf_counter()
     resp = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
@@ -131,14 +131,14 @@ def hofmoeller(base_url: str, dataset: str, bb: dict, start_time: datetime, end_
 
     print('url\n', url); print()
 
-    print("Waiting for response from SDAP... ", end="")
+    print("Waiting for response from IDEAS... ", end="")
     start = time.perf_counter()
     resp = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
     return hofmoeller_prep(resp, dim)
 
 '''
-SDAP endpoint response processing
+IDEAS endpoint response processing
 '''
 
 def prep_ts(ts_json: dict) -> xr.Dataset:
