@@ -102,8 +102,10 @@ def heatmap(data: xr.DataArray, x_label: str, y_label: str, title='', cmap='rain
     '''
     Plots colormesh heatmap
     '''
+    time = [ np.datetime_as_string(t, unit='D') for t in data.time ]
+
     plt.figure(figsize=(12,5))
-    mesh = plt.pcolormesh(data.time, data.dim, data, cmap=cmap)
+    mesh = plt.pcolormesh(time, data.dim, data, cmap=cmap)
     plt.colorbar(mesh)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
