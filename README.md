@@ -13,9 +13,9 @@ __Requirements__
 
 __Running the notebook__  
 
-To run the `IDEAS.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `requirements.yml` file to include all required dependencies, and install the environment as a kernelspec:
+To run the `IDEAS.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
 ```
-conda env create -f requirements.yml
+conda env create -f environment.yml
 conda activate ideas_notebook
 pip install notebook
 pip install ipykernel
