@@ -5,14 +5,21 @@ The `IDEAS.ipynb` notebook highlights some of the analytics and visualization ca
 - Hurrican Ian as it makes landfall over Florida in September, 2022
 - LIS model data over the Mississippi river basin
 
-## Running the notebook
+__Requirements__  
 
-To run the `IDEAS.ipynb` notebook, create a conda environment using the `requirements.yml` file:
+* conda >= 22.9.0  
+
+* OS: Mac (more OS options to come)
+
+__Running the notebook__  
+
+To run the `IDEAS.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `requirements.yml` file to include all required dependencies, and install the environment as a kernelspec:
 ```
 conda env create -f requirements.yml
+conda activate ideas_notebook
+pip install notebook
+pip install ipykernel
+python -m ipykernel install --user --name=ideas_notebook
+jupyter notebook
 ```
-This will create a conda environment named `ideas_notebook` which will include all required dependencies. You can use this environment as the Jupyter kernel to run the notebook (see [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for more information).
-
-
-## Troubleshooting
-If you are having trouble launching the notebook and get the error message "Jupyter command `jupyter-notebook` not found.", try running `pip install notebook` and then `jupyter notebook`
+From the localhost page that opens, you can run the ideas notebook. Make sure you change the kernel by selecting the option at the top Kernel -> Change kernel -> ideas_notebook (see [here](https://ipython.readthedocs.io/en/stable/install/kernel_install.html#kernels-for-different-environments) for more information).
