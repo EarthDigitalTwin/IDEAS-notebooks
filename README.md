@@ -1,8 +1,8 @@
 # IDEAS Digital Twin Notebooks
 
 The `IDEAS.ipynb` notebook highlights some of the analytics and visualization capabilities of IDEAS with four use cases:
-- Pakistan flooding occuring from June through September, 2022
-- Hurrican Ian as it makes landfall over Florida in September, 2022
+- Pakistan flooding occurring from June through September, 2022
+- Hurricane Ian as it makes landfall over Florida in September, 2022
 - France storm in January 2022
 - LIS model data over the Mississippi river basin
 
