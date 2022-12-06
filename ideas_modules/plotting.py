@@ -9,7 +9,7 @@ import cartopy.feature as cf
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 import numpy as np
 import textwrap
-
+import matplotlib.colors as colors
 
 def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label: str, title='', norm=False):
     '''
@@ -136,7 +136,7 @@ def map_points(points: List, title='', zoom=False):
     ax.legend().set_zorder(102)
 
 
-def map_data(data: xr.DataArray, title: str, cmap='rainbow'):
+def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False):
     '''
     Plots data on map
     '''
@@ -148,9 +148,13 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow'):
     }
     ax = base_map(bounds)
     x, y = np.meshgrid(data.lon, data.lat)
-    mesh = ax.pcolormesh(x, y, data.values, vmin=np.nanmin(data.values),
-                         vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
-    plt.colorbar(mesh)
+    if log_scale:
+        mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
+    else:
+        mesh = ax.pcolormesh(x, y, data.values, vmin=np.nanmin(data.values),
+                            vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
+    cb = plt.colorbar(mesh)
+    cb.set_label(cb_label)
     plt.title(title)
     plt.show()
 
