@@ -6,7 +6,7 @@ The `IDEAS.ipynb` notebook highlights some of the analytics and visualization ca
 - France storm in January 2022
 - LIS model data over the Mississippi river basin
 
-The `Generalized_AQACF.ipynb` notebook highlights some of the analytics and visualization capabilities of AQACF with siz use cases:
+The `Generalized_AQACF.ipynb` notebook highlights some of the analytics and visualization capabilities of AQACF with six use cases:
 - 2021 Alisal Wildfire
 - 2020 California Wildfires
 - Los Angeles ports backlog Fall 2021
