@@ -6,6 +6,14 @@ The `IDEAS.ipynb` notebook highlights some of the analytics and visualization ca
 - France storm in January 2022
 - LIS model data over the Mississippi river basin
 
+The `Generalized_AQACF.ipynb` notebook highlights some of the analytics and visualization capabilities of AQACF with siz use cases:
+- 2021 Alisal Wildfire
+- 2020 California Wildfires
+- Los Angeles ports backlog Fall 2021
+- Fireworks during 4th of July 2022 in Los Angeles county
+- Air Pollution in the Yellow Sea
+- Fires and Thermal Daily Difference in Southeast Asia in 2022
+
 __Requirements__  
 
 * conda >= 22.9.0  
@@ -14,7 +22,7 @@ __Requirements__
 
 __Running the notebook__  
 
-To run the `IDEAS.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
+To run the `IDEAS.ipynb` or `Generalized_AQACF.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
 ```
 conda env create -f environment.yml
 conda activate ideas_notebook
