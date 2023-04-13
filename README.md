@@ -1,4 +1,4 @@
-# IDEAS Digital Twin Notebooks
+# IDEAS Digital Twin Notebooks 
 
 The `IDEAS.ipynb` notebook highlights some of the analytics and visualization capabilities of IDEAS with four use cases:
 - Pakistan flooding occurring from June through September, 2022
