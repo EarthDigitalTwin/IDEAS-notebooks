@@ -196,3 +196,78 @@ def heatmap(data: xr.DataArray, x_label: str, y_label: str, title='', cmap='rain
     plt.xticks(rotation=45)
     plt.title(title)
     plt.show()
+
+
+def calc_anoms(data):
+    return data - np.nanmean(data)
+
+def comparison_plot(data, x_label, y_label, var='', anoms=False):
+    plt.figure(figsize=(15,6))
+    
+    for da in data:
+        if anoms:
+            vals = calc_anoms(da.values)
+        else:
+            vals = da.values
+        plt.plot(da.time, vals, linewidth=2, label=da.attrs['shortname'])
+    
+    plt.grid(b=True, which='major', color='k', linestyle='-')
+    plt.xlabel(x_label, fontsize=12)
+    plt.ylabel (y_label, fontsize=12)
+    plt.xticks(rotation=45)
+    plt.title(f'{var}{" Anomalies" if anoms else ""}', fontsize=16)
+    plt.legend(prop={'size': 12})
+    plt.show()
+
+
+def stacked_overlay_plot(x_datas: List[np.array], y_datas: List[np.array],
+                series_labels: List[str], y_labels=List[str], title: str='',
+                top_paddings: List[int]=[0, 0]):
+
+    plt.style.use('ggplot')
+    fig, ax = plt.subplots(2, 1, sharex=True)
+
+    # Plot 1
+    ax[0].set_title(title)
+    ax[0].plot(
+        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[0] ],
+        y_datas[0], label=series_labels[0])
+        
+    # Plot 2
+    ax[0].plot(
+        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[1] ],
+        y_datas[1], label=series_labels[1])
+
+    ax[0].legend(loc='upper center', shadow=True)
+    y_data_max = max( np.amax(y_datas[0]), np.amax(y_datas[1]) )
+    ax[0].set_ylim([ 0, y_data_max + top_paddings[0] ])
+    ax[0].set_ylabel(y_labels[0])
+
+    # Plot 3
+    ax[1].plot(
+        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[2] ],
+        y_datas[2], label=series_labels[2])
+        
+    # Plot 4
+    ax[1].plot(
+        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[3] ],
+        y_datas[3], label=series_labels[3])
+    
+    ax[1].legend(loc='upper center', shadow=True)
+    y_data_max = max(np.amax(y_datas[2]), np.amax(y_datas[3]))
+    ax[1].set_ylim([ 0, y_data_max + top_paddings[1] ])
+    ax[1].set_ylabel(y_labels[1])
+
+    # Set title and legend
+    plt.legend(loc='upper center', shadow=True)
+
+    # Set grid and ticks
+    dtFmt = mdates.DateFormatter('%b %d')
+    plt.gca().xaxis.set_major_formatter(dtFmt)
+    plt.xticks(rotation=45)
+    ax[0].tick_params(left=False, bottom=False)
+    ax[1].tick_params(left=False, bottom=False)
+    ax[0].grid(b=True, which='major', color='k', linestyle='--', linewidth=0.25)
+    ax[1].grid(b=True, which='major', color='k', linestyle='--', linewidth=0.25)
+    
+    plt.show()
