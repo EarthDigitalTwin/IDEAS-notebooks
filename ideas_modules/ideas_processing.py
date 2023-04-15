@@ -247,7 +247,7 @@ def prep_data_in_bounds(var_json: dict) -> xr.DataArray:
     time.sort()
 
     da = xr.DataArray(
-        data=np.zeros((len(time), len(lat), len(lon))),
+        data=np.full((len(time), len(lat), len(lon)), np.nan),
         dims=['time', 'lat', 'lon'],
         coords=dict(
             time=(['time'], time),
