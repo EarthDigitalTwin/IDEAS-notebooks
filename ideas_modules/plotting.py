@@ -11,6 +11,7 @@ import numpy as np
 import textwrap
 import matplotlib.colors as colors
 
+
 def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label: str, title='', norm=False):
     '''
     Plots timeseries data on a chart
@@ -44,7 +45,7 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     plt.show()
 
 
-def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str):
+def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='m3/s'):
     fig = plt.figure(figsize=(12, 5))
 
     for df, var, label in data:
@@ -57,7 +58,7 @@ def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str):
     # plt.grid()
     plt.grid(b=True, which='major', color='k', linestyle='-')
     # plt.xlabel(x_label, fontsize=12)
-    plt.ylabel('m3/s', fontsize=12)
+    plt.ylabel(ylabel, fontsize=12)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
     plt.title(title, fontsize=16)
@@ -114,7 +115,7 @@ def map_box(bb: dict, padding=20):
     plt.show()
 
 
-def map_points(points: List, title='', zoom=False):
+def map_points(points: List, region='miss', title='', zoom=False):
     '''
     Plots lat lon points on map
     points: list of tuples (lat, lon, label)
@@ -126,12 +127,20 @@ def map_points(points: List, title='', zoom=False):
 
     ax.set_title(title)
 
-    ax.set_xlim(-95, -86)
-    ax.set_ylim(29, 35)
+    if region == 'miss':
+        ax.set_xlim(-95, -86)
+        ax.set_ylim(29, 35)
 
-    if zoom:
-        ax.set_xlim(-91.25, -90.75)
-        ax.set_ylim(32.1, 32.75)
+        if zoom:
+            ax.set_xlim(-91.25, -90.75)
+            ax.set_ylim(32.1, 32.75)
+    elif region == 'gar':
+        ax.set_xlim(-3, 5)
+        ax.set_ylim(41, 48)
+
+        if zoom:
+            ax.set_xlim(-0.5, 1)
+            ax.set_ylim(44, 45)
 
     ax.legend().set_zorder(102)
 
@@ -152,7 +161,7 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_sc
         mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
     else:
         mesh = ax.pcolormesh(x, y, data.values, vmin=np.nanmin(data.values),
-                            vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
+                             vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
     cb = plt.colorbar(mesh)
     cb.set_label(cb_label)
     plt.title(title)
