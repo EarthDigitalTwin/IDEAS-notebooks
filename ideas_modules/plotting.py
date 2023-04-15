@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import List, Tuple
+from matplotlib import dates
 import xarray as xr
 import pandas as pd
-import matplotlib.dates as mdate
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 import cartopy.crs as ccrs
@@ -36,8 +37,6 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     plt.grid(b=True, which='major', color='k', linestyle='-')
     plt.xlabel(x_label, fontsize=12)
     plt.ylabel(y_label, fontsize=12)
-    locator = mdate.DayLocator(interval=len(da.time)//8)
-    plt.gca().xaxis.set_major_locator(locator)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
     plt.title(title, fontsize=16)
@@ -179,9 +178,61 @@ def heatmap(data: xr.DataArray, x_label: str, y_label: str, title='', cmap='rain
     plt.colorbar(mesh)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    locator = mdate.DayLocator(interval=5)
+    locator = dates.DayLocator(interval=5)
     plt.gca().xaxis.set_major_locator(locator)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
     plt.title(title)
+    plt.show()
+
+
+def stacked_overlay_plot(x_datas: List[np.array], y_datas: List[np.array],
+                         series_labels: List[str], y_labels=List[str], title: str = '',
+                         top_paddings: List[int] = [0, 0]):
+
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(12, 7))
+
+    # Plot 1
+    ax[0].set_title(title)
+    ax[0].plot(
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[0]],
+        y_datas[0], label=series_labels[0])
+
+    # Plot 2
+    ax[0].plot(
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[1]],
+        y_datas[1], label=series_labels[1])
+
+    ax[0].legend(loc='upper center', shadow=True)
+    y_data_max = max(np.amax(y_datas[0]), np.amax(y_datas[1]))
+    ax[0].set_ylim([0, y_data_max + top_paddings[0]])
+    ax[0].set_ylabel(y_labels[0])
+
+    # Plot 3
+    ax[1].plot(
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[2]],
+        y_datas[2], label=series_labels[2])
+
+    # Plot 4
+    ax[1].plot(
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[3]],
+        y_datas[3], label=series_labels[3])
+
+    ax[1].legend(loc='upper center', shadow=True)
+    y_data_max = max(np.amax(y_datas[2]), np.amax(y_datas[3]))
+    ax[1].set_ylim([0, y_data_max + top_paddings[1]])
+    ax[1].set_ylabel(y_labels[1])
+
+    # Set title and legend
+    plt.legend(loc='upper center', shadow=True)
+
+    # Set grid and ticks
+    dtFmt = dates.DateFormatter('%b %d')
+    plt.gca().xaxis.set_major_formatter(dtFmt)
+    plt.xticks(rotation=45)
+    ax[0].tick_params(left=False, bottom=False)
+    ax[1].tick_params(left=False, bottom=False)
+    ax[0].grid(b=True, which='major', color='k', linestyle='--', linewidth=0.25)
+    ax[1].grid(b=True, which='major', color='k', linestyle='--', linewidth=0.25)
+
     plt.show()
