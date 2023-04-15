@@ -54,34 +54,34 @@ def spatial_timeseries(base_url: str, dataset: str, bb: dict, start_time: dateti
     return prep_ts(ts_json)
 
 
-def temporal_variance(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
-    '''
-    Makes request to varianceSpark IDEAS endpoint
-    '''
-    params = {
-        'ds': dataset,
-        'minLon': bb['min_lon'],
-        'minLat': bb['min_lat'],
-        'maxLon': bb['max_lon'],
-        'maxLat': bb['max_lat'],
-        'startTime': start_time.strftime(dt_format),
-        'endTime': end_time.strftime(dt_format)
-    }
+# def temporal_variance(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
+#     '''
+#     Makes request to varianceSpark IDEAS endpoint
+#     '''
+#     params = {
+#         'ds': dataset,
+#         'minLon': bb['min_lon'],
+#         'minLat': bb['min_lat'],
+#         'maxLon': bb['max_lon'],
+#         'maxLat': bb['max_lat'],
+#         'startTime': start_time.strftime(dt_format),
+#         'endTime': end_time.strftime(dt_format)
+#     }
 
-    url = '{}/varianceSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}'.\
-        format(base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
-               start_time.strftime(dt_format), end_time.strftime(dt_format))
+#     url = '{}/varianceSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}'.\
+#         format(base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
+#                start_time.strftime(dt_format), end_time.strftime(dt_format))
 
-    # Display some information about the job
-    print('url\n', url)
-    print()
+#     # Display some information about the job
+#     print('url\n', url)
+#     print()
 
-    # Query IDEAS to compute the time averaged map
-    print("Waiting for response from IDEAS... ", end="")
-    start = time.perf_counter()
-    var_json = requests.get(url, params=params, verify=False).json()
-    print("took {} seconds".format(time.perf_counter() - start))
-    return prep_var(var_json)
+#     # Query IDEAS to compute the time averaged map
+#     print("Waiting for response from IDEAS... ", end="")
+#     start = time.perf_counter()
+#     var_json = requests.get(url, params=params, verify=False).json()
+#     print("took {} seconds".format(time.perf_counter() - start))
+#     return prep_var(var_json)
 
 
 def data_subsetting(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
@@ -411,6 +411,20 @@ def hofmoeller_prep(var_json: dict, dim: str) -> xr.Dataset:
 
 ###############################
 
+def data_in_bounds(base_url, dataset, bb, start_time, end_time):
+    url = '{}/datainbounds?ds={}&b={},{},{},{}&startTime={}&endTime={}&lowPassFilter=False'.format(
+        base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
+        start_time.strftime(dt_format), end_time.strftime(dt_format))
+    
+    # Display some information about the job
+    print(url); print()
+    
+    # Query SDAP to get data-in-bounds
+    print("Waiting for response from SDAP...")
+    start = time.perf_counter()
+    var_json = requests.get(url, verify=False).json()
+    print("Time series took {} seconds".format(time.perf_counter() - start))
+    return prep_data_in_bounds(var_json)
 
 def spatial_mean(base_url, dataset, bb, start_time, end_time, proc=[]):
     url = '{}/timeSeriesSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}&lowPassFilter=False&seasonalFilter=False'.\
