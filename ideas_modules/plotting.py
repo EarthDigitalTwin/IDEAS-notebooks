@@ -1,34 +1,16 @@
-import warnings
-warnings.filterwarnings("ignore")
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-import requests
+from datetime import datetime
+from typing import List, Tuple
+from matplotlib import dates
+import xarray as xr
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from matplotlib.patches import Polygon
-import matplotlib.colors as colors
-
-import time 
-import xarray as xr
-import numpy as np
-from typing import List, Tuple
-
 import cartopy.crs as ccrs
 import cartopy.feature as cf
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+import numpy as np
 import textwrap
-from datetime import datetime, timedelta
-
-from tabulate import tabulate
-from shapely.geometry import box
-
-from IPython.display import Image
-from owslib.util import Authentication
-from owslib.wms import WebMapService
-from PIL import Image as I
-from PIL import ImageDraw
+import matplotlib.colors as colors
 
 
 def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label: str, title='', norm=False):
@@ -55,8 +37,6 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     plt.grid(b=True, which='major', color='k', linestyle='-')
     plt.xlabel(x_label, fontsize=12)
     plt.ylabel(y_label, fontsize=12)
-    locator = mdates.DayLocator(interval=len(da.time)//8)
-    plt.gca().xaxis.set_major_locator(locator)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
     plt.title(title, fontsize=16)
@@ -134,7 +114,7 @@ def map_box(bb: dict, padding=20):
     plt.show()
 
 
-def map_points(points: List, title='', zoom=False):
+def map_points(points: List, region='miss', title='', zoom=False):
     '''
     Plots lat lon points on map
     points: list of tuples (lat, lon, label)
@@ -146,12 +126,20 @@ def map_points(points: List, title='', zoom=False):
 
     ax.set_title(title)
 
-    ax.set_xlim(-95, -86)
-    ax.set_ylim(29, 35)
+    if region == 'miss':
+        ax.set_xlim(-95, -86)
+        ax.set_ylim(29, 35)
 
-    if zoom:
-        ax.set_xlim(-91.25, -90.75)
-        ax.set_ylim(32.1, 32.75)
+        if zoom:
+            ax.set_xlim(-91.25, -90.75)
+            ax.set_ylim(32.1, 32.75)
+    elif region == 'gar':
+        ax.set_xlim(-3, 5)
+        ax.set_ylim(41, 48)
+
+        if zoom:
+            ax.set_xlim(-0.5, 1)
+            ax.set_ylim(44, 45)
 
     ax.legend().set_zorder(102)
 
@@ -172,7 +160,7 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_sc
         mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
     else:
         mesh = ax.pcolormesh(x, y, data.values, vmin=np.nanmin(data.values),
-                            vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
+                             vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
     cb = plt.colorbar(mesh)
     cb.set_label(cb_label)
     plt.title(title)
@@ -190,7 +178,7 @@ def heatmap(data: xr.DataArray, x_label: str, y_label: str, title='', cmap='rain
     plt.colorbar(mesh)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    locator = mdates.DayLocator(interval=5)
+    locator = dates.DayLocator(interval=5)
     plt.gca().xaxis.set_major_locator(locator)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
@@ -198,76 +186,53 @@ def heatmap(data: xr.DataArray, x_label: str, y_label: str, title='', cmap='rain
     plt.show()
 
 
-def calc_anoms(data):
-    return data - np.nanmean(data)
-
-def comparison_plot(data, x_label, y_label, var='', anoms=False):
-    plt.figure(figsize=(15,6))
-    
-    for da in data:
-        if anoms:
-            vals = calc_anoms(da.values)
-        else:
-            vals = da.values
-        plt.plot(da.time, vals, linewidth=2, label=da.attrs['shortname'])
-    
-    plt.grid(b=True, which='major', color='k', linestyle='-')
-    plt.xlabel(x_label, fontsize=12)
-    plt.ylabel (y_label, fontsize=12)
-    plt.xticks(rotation=45)
-    plt.title(f'{var}{" Anomalies" if anoms else ""}', fontsize=16)
-    plt.legend(prop={'size': 12})
-    plt.show()
-
-
 def stacked_overlay_plot(x_datas: List[np.array], y_datas: List[np.array],
-                series_labels: List[str], y_labels=List[str], title: str='',
-                top_paddings: List[int]=[0, 0]):
+                         series_labels: List[str], y_labels=List[str], title: str = '',
+                         top_paddings: List[int] = [0, 0]):
 
-    plt.style.use('ggplot')
-    fig, ax = plt.subplots(2, 1, sharex=True)
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(12, 7))
 
     # Plot 1
     ax[0].set_title(title)
     ax[0].plot(
-        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[0] ],
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[0]],
         y_datas[0], label=series_labels[0])
-        
+
     # Plot 2
     ax[0].plot(
-        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[1] ],
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[1]],
         y_datas[1], label=series_labels[1])
 
     ax[0].legend(loc='upper center', shadow=True)
-    y_data_max = max( np.amax(y_datas[0]), np.amax(y_datas[1]) )
-    ax[0].set_ylim([ 0, y_data_max + top_paddings[0] ])
+    y_data_max = max(np.amax(y_datas[0]), np.amax(y_datas[1]))
+    ax[0].set_ylim([0, y_data_max + top_paddings[0]])
     ax[0].set_ylabel(y_labels[0])
 
     # Plot 3
     ax[1].plot(
-        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[2] ],
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[2]],
         y_datas[2], label=series_labels[2])
-        
+
     # Plot 4
     ax[1].plot(
-        [ datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[3] ],
+        [datetime.strptime(x_val, '%Y-%m-%dT%H:%M:%SZ').replace(year=2022) for x_val in x_datas[3]],
         y_datas[3], label=series_labels[3])
-    
+
     ax[1].legend(loc='upper center', shadow=True)
     y_data_max = max(np.amax(y_datas[2]), np.amax(y_datas[3]))
-    ax[1].set_ylim([ 0, y_data_max + top_paddings[1] ])
+    ax[1].set_ylim([0, y_data_max + top_paddings[1]])
     ax[1].set_ylabel(y_labels[1])
 
     # Set title and legend
     plt.legend(loc='upper center', shadow=True)
 
     # Set grid and ticks
-    dtFmt = mdates.DateFormatter('%b %d')
+    dtFmt = dates.DateFormatter('%b %d')
     plt.gca().xaxis.set_major_formatter(dtFmt)
     plt.xticks(rotation=45)
     ax[0].tick_params(left=False, bottom=False)
     ax[1].tick_params(left=False, bottom=False)
     ax[0].grid(b=True, which='major', color='k', linestyle='--', linewidth=0.25)
     ax[1].grid(b=True, which='major', color='k', linestyle='--', linewidth=0.25)
-    
+
     plt.show()

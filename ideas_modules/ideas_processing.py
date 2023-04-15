@@ -6,33 +6,12 @@ import pandas as pd
 import time
 import requests
 
-import matplotlib.pyplot as plt
-
-# Default values
-DEFAULT_BASEMAP_RANGE = {
-    'llcrnrlon': -180,
-    'llcrnrlat': -90,
-    'urcrnrlon': 180,
-    'urcrnrlat': 90
-}
 dt_format = "%Y-%m-%dT%H:%M:%SZ"
-units = {
-    'pm25': 'µg/m³',
-    'O3': 'mol m-2',
-    'SO2': 'mmol/m2',
-    'NO2': 'umol/m2',
-    'CO': 'ppb',
-    'CH4': 'ppb'
-}
-url_in_situ            = 'https://ideas-digitaltwin.jpl.nasa.gov/insitu/1.0'
-endpoint_in_situ       = 'query_data_doms'
-start_index_in_situ    = 0
-items_per_page_in_situ = 500
-
 
 '''
 IDEAS endpoint functions
-''' 
+'''
+
 
 def spatial_timeseries(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.Dataset:
     '''
@@ -52,6 +31,36 @@ def spatial_timeseries(base_url: str, dataset: str, bb: dict, start_time: dateti
     ts_json = requests.get(url, verify=False).json()
     print("took {} seconds".format(time.perf_counter() - start))
     return prep_ts(ts_json)
+
+
+def temporal_variance(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
+    '''
+    Makes request to varianceSpark IDEAS endpoint
+    '''
+    params = {
+        'ds': dataset,
+        'minLon': bb['min_lon'],
+        'minLat': bb['min_lat'],
+        'maxLon': bb['max_lon'],
+        'maxLat': bb['max_lat'],
+        'startTime': start_time.strftime(dt_format),
+        'endTime': end_time.strftime(dt_format)
+    }
+
+    url = '{}/varianceSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}'.\
+        format(base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
+               start_time.strftime(dt_format), end_time.strftime(dt_format))
+
+    # Display some information about the job
+    print('url\n', url)
+    print()
+
+    # Query IDEAS to compute the time averaged map
+    print("Waiting for response from IDEAS... ", end="")
+    start = time.perf_counter()
+    var_json = requests.get(url, params=params, verify=False).json()
+    print("took {} seconds".format(time.perf_counter() - start))
+    return prep_var(var_json)
 
 
 def data_subsetting(base_url: str, dataset: str, bb: dict, start_time: datetime, end_time: datetime) -> xr.DataArray:
@@ -378,110 +387,3 @@ def hofmoeller_prep(var_json: dict, dim: str) -> xr.Dataset:
         )
     )
     return ds
-
-###############################
-
-def data_in_bounds(base_url, dataset, bb, start_time, end_time):
-    url = '{}/datainbounds?ds={}&b={},{},{},{}&startTime={}&endTime={}&lowPassFilter=False'.format(
-        base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
-        start_time.strftime(dt_format), end_time.strftime(dt_format))
-    
-    # Display some information about the job
-    print(url); print()
-    
-    # Query SDAP to get data-in-bounds
-    print("Waiting for response from SDAP...")
-    start = time.perf_counter()
-    var_json = requests.get(url, verify=False).json()
-    print("Time series took {} seconds".format(time.perf_counter() - start))
-    return prep_data_in_bounds(var_json)
-
-def spatial_mean(base_url, dataset, bb, start_time, end_time, proc=[]):
-    url = '{}/timeSeriesSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}&lowPassFilter=False&seasonalFilter=False'.\
-        format(base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
-               start_time.strftime(dt_format), end_time.strftime(dt_format))
-
-    # Display some information about the job
-    print(url); print()
-
-    # Query SDAP to compute the time averaged map
-    print("Waiting for response from SDAP...")
-    start = time.perf_counter()
-    ts_json = requests.get(url, verify=False).json()
-    print("Time series took {} seconds".format(time.perf_counter() - start))
-    return prep_ts(ts_json, proc)
-
-def prep_ts(ts_json, proc):
-    shortname = ts_json['meta'][0]['shortName']
-    time = np.array([np.datetime64(ts[0]["iso_time"][:10]) for ts in ts_json["data"]])
-    vals = np.array([ts[0]["mean"] for ts in ts_json["data"]])
-    
-    da = xr.DataArray(vals, coords = [time], dims=['time'])
-    
-    for proc in proc:
-        da = proc(da)
-        
-    da.attrs['shortname'] = shortname
-        
-    return da
-
-def temporal_variance(base_url, dataset, bb, start_time, end_time):
-    params = {
-        'ds': dataset,
-        'minLon': bb['min_lon'],
-        'minLat': bb['min_lat'],
-        'maxLon': bb['max_lon'],
-        'maxLat': bb['max_lat'],
-        'startTime': start_time.strftime(dt_format),
-        'endTime': end_time.strftime(dt_format)
-    }
-    
-    url = '{}/varianceSpark?ds={}&minLon={}&minLat={}&maxLon={}&maxLat={}&startTime={}&endTime={}'.\
-        format(base_url, dataset, bb['min_lon'], bb['min_lat'], bb['max_lon'], bb['max_lat'],
-               start_time.strftime(dt_format), end_time.strftime(dt_format))
-    
-    # Display some information about the job
-    print(url); print()
-    
-    # Query SDAP to compute the time averaged map
-    print("Waiting for response from SDAP...")
-    start = time.perf_counter()
-    var_json = requests.get(url, params=params, verify=False).json()
-    print("Time series took {} seconds".format(time.perf_counter() - start))
-    return prep_var(var_json)
-    
-def prep_var(var_json):
-    shortname = var_json['meta']['shortName']
-
-    vals = np.array([v['variance'] for var in var_json['data'] for v in var])
-    lats = np.array([var[0]['lat'] for var in var_json['data']])
-    lons = np.array([v['lon'] for v in var_json['data'][0]])
-    
-    vals[vals==-9999]=np.nan
-    
-    vals_2d = np.reshape(vals, (len(var_json['data']), len(var_json['data'][0])))
-
-    da = xr.DataArray(vals_2d, coords={"lat": lats, "lon": lons}, dims=["lat", "lon"])
-    da.attrs['shortname'] = shortname
-    da.attrs['units'] = '$m^2/s^2$'
-    return da
-
-
-def get_in_situ_data(start_time: str, end_time: str,
-                     min_lon: int, max_lon: int, min_lat: int, max_lat: int, provider: str) -> pd.DataFrame:
-    data = []
-    query_url = f'{url_in_situ}/{endpoint_in_situ}?' \
-                f'startIndex={start_index_in_situ}&itemsPerPage={items_per_page_in_situ}&' \
-                f'startTime={start_time}&endTime={end_time}&' \
-                f'bbox={min_lon},{min_lat},{max_lon},{max_lat}&' \
-                f'provider={provider}'
-    if query_url:
-        print(query_url)
-    while query_url:
-        resp = requests.get(query_url, verify=False).json()
-        if len(resp['results']):
-            data += resp['results']
-        query_url = resp['next'].replace('http:', 'https:') if resp['last'] != resp['next'] else None
-
-    
-    return pd.DataFrame(data) if len(data) else None
