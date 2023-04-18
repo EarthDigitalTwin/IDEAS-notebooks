@@ -23,10 +23,9 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     for entry in data:
         da = entry[0]
         label = entry[1]
+        vals = da.values
         if norm:
-            vals = da.values / np.sqrt(np.sum(da.values**2))
-        else:
-            vals = da.values
+            vals = (vals - np.nanmin(vals)) / (np.nanmax(vals) - np.nanmin(vals))
         if len(entry) == 3:
             plt.plot(da.time, vals, linewidth=2,
                      label=textwrap.fill(label, 50), color=entry[2])
@@ -44,7 +43,7 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     plt.show()
 
 
-def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str):
+def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='m3/s', norm=False):
     fig = plt.figure(figsize=(12, 5))
 
     for df, var, label in data:
@@ -52,12 +51,14 @@ def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str):
             var_data = df[var]/35.315
         else:
             var_data = df[var]
+
+        if norm:
+            var_data = (var_data - np.min(var_data)) / (np.max(var_data) - np.min(var_data))
+            ylabel = 'Normalized values'
         plt.plot(df.time, var_data, label=label)
 
-    # plt.grid()
     plt.grid(b=True, which='major', color='k', linestyle='-')
-    # plt.xlabel(x_label, fontsize=12)
-    plt.ylabel('m3/s', fontsize=12)
+    plt.ylabel(ylabel, fontsize=12)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
     plt.title(title, fontsize=16)
@@ -144,7 +145,7 @@ def map_points(points: List, region='miss', title='', zoom=False):
     ax.legend().set_zorder(102)
 
 
-def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False):
+def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False, padding=2.5):
     '''
     Plots data on map
     '''
@@ -154,7 +155,7 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_sc
         'min_lat': data.lat.min(),
         'max_lat': data.lat.max()
     }
-    ax = base_map(bounds)
+    ax = base_map(bounds, padding)
     x, y = np.meshgrid(data.lon, data.lat)
     if log_scale:
         mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
