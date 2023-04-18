@@ -145,7 +145,7 @@ def map_points(points: List, region='miss', title='', zoom=False):
     ax.legend().set_zorder(102)
 
 
-def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False):
+def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False, padding=2.5):
     '''
     Plots data on map
     '''
@@ -155,7 +155,7 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_sc
         'min_lat': data.lat.min(),
         'max_lat': data.lat.max()
     }
-    ax = base_map(bounds)
+    ax = base_map(bounds, padding)
     x, y = np.meshgrid(data.lon, data.lat)
     if log_scale:
         mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
