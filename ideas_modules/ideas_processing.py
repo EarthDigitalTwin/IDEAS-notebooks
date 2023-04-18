@@ -230,35 +230,28 @@ def prep_data_in_bounds(var_json: dict) -> xr.DataArray:
     '''
     Formats datainbounds response into xarray dataarray object
     '''
-    lat = []
-    lon = []
-    time = []
+    lats = np.unique([o['latitude'] for o in var_json])
+    lons = np.unique([o['longitude'] for o in var_json])
+    times = np.unique([o['time'] for o in var_json])
 
-    for data in var_json:
-        if data['latitude'] not in lat:
-            lat.append(data['latitude'])
-        if data['longitude'] not in lon:
-            lon.append(data['longitude'])
-        if data['time'] not in time:
-            time.append(data["time"])
+    vals_3d = np.empty((len(times), len(lats), len(lons)))
 
-    lat.sort()
-    lon.sort()
-    time.sort()
+    data_dict = {(data['time'], data['latitude'], data['longitude']): data['data'][0]['variable'] for data in var_json}
+
+    for i, t in enumerate(times):
+        for j, lat in enumerate(lats):
+            for k, lon in enumerate(lons):
+                vals_3d[i, j, k] = data_dict.get((t, lat, lon), np.nan)
 
     da = xr.DataArray(
-        data=np.full((len(time), len(lat), len(lon)), np.nan),
+        data=vals_3d,
         dims=['time', 'lat', 'lon'],
         coords=dict(
-            time=(['time'], time),
-            lat=(['lat'], lat),
-            lon=(['lon'], lon)
+            time=(['time'], times),
+            lat=(['lat'], lats),
+            lon=(['lon'], lons)
         )
     )
-
-    for data in var_json:
-        da.loc[data['time'], data['latitude'],
-               data['longitude']] = data['data'][0]['variable']
 
     return da
 

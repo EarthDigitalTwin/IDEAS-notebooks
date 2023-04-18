@@ -1,6 +1,6 @@
 # IDEAS Digital Twin Notebooks 
 
-The `IDEAS.ipynb` notebook highlights some of the analytics and visualization capabilities of IDEAS with four use cases:
+The `Flood_Demo.ipynb` notebook highlights some of the analytics and visualization capabilities of IDEAS with four use cases:
 - Pakistan flooding occurring from June through September, 2022
 - Hurricane Ian as it makes landfall over Florida in September, 2022
 - France storm in January 2022
@@ -23,7 +23,7 @@ __Requirements__
 
 __Running the notebook__  
 
-To run the `IDEAS.ipynb` or `Generalized_AQACF.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
+To run the `Flood_Demo.ipynb` or `Generalized_AQACF.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
 ```
 conda env create -f environment.yml
 conda activate ideas_notebook
