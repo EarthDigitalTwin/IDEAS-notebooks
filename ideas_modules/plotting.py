@@ -43,7 +43,7 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     plt.show()
 
 
-def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='m3/s', norm=False):
+def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='$m3/s$', norm=False, xlim=()):
     fig = plt.figure(figsize=(12, 5))
 
     for df, var, label in data:
@@ -57,12 +57,61 @@ def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='m
             ylabel = 'Normalized values'
         plt.plot(df.time, var_data, label=label)
 
+    if xlim:
+        plt.xlim(xlim)
+
     plt.grid(b=True, which='major', color='k', linestyle='-')
     plt.ylabel(ylabel, fontsize=12)
     plt.gcf().autofmt_xdate()
     plt.xticks(rotation=45)
     plt.title(title, fontsize=16)
     plt.legend(prop={'size': 12})
+
+
+def plot_rapid_obs(rapid: List[Tuple[pd.DataFrame, str, str]], obs: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='$m3/s$'):
+    fig = plt.figure(figsize=(12, 5))
+
+    for df, var, label in rapid:
+        plt.plot(df.time, df[var], label=label)
+
+    for df, var, label in obs:
+        for _, _, _ in rapid:
+            plt.fill_between([], [])
+        plt.plot(df.time, df[var], label=label, zorder=0)
+        plt.fill_between(df.time, df[var], np.nanmin(df[var]), alpha=0.15, step='pre', zorder=0)
+
+    plt.grid(b=True, which='major', color='k', linestyle='-')
+    plt.ylabel(ylabel, fontsize=12)
+    plt.gcf().autofmt_xdate()
+    plt.xticks(rotation=45)
+    plt.title(title, fontsize=16)
+    plt.legend(prop={'size': 12})
+
+
+def plot_double_y_axis(data1: List[Tuple[pd.DataFrame, str, str]], data2: List[Tuple[pd.DataFrame, str, str]], y1label: str, y2label: str, title: str):
+    fig, ax1 = plt.subplots(figsize=(12, 5))
+    ax2 = ax1.twinx()
+
+    for _, _, _ in data1:
+        ax2.plot([], [])
+    for df, var, label in data2:
+        ax2.plot(df.time, df[var], '--', label=label, alpha=0.75)
+        if len(data2) == 1:
+            for _, _, _ in data1:
+                ax2.fill_between([], [])
+            ax2.fill_between(df.time, df[var], np.nanmin(df[var]), alpha=0.15, step='pre')
+
+    for df, var, label in data1:
+        ax1.plot(df.time, df[var], label=label,)
+
+    ax1.grid(b=True, which='major', color='k', linestyle='-')
+    ax1.set_ylabel(y1label, fontsize=12)
+    ax2.set_ylabel(y2label, fontsize=12)
+    plt.gcf().autofmt_xdate()
+    plt.xticks(rotation=45)
+    plt.title(title, fontsize=16)
+    ax1.legend(prop={'size': 12})
+    ax2.legend(prop={'size': 12})
 
 
 def base_map(bounds: dict = {}, padding: float = 2.5) -> plt.axes:
@@ -145,7 +194,7 @@ def map_points(points: List, region='miss', title='', zoom=False):
     ax.legend().set_zorder(102)
 
 
-def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False, padding=2.5):
+def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_scale=False, padding=2.5, min_max=()):
     '''
     Plots data on map
     '''
@@ -159,6 +208,8 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_sc
     x, y = np.meshgrid(data.lon, data.lat)
     if log_scale:
         mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
+    elif min_max:
+        mesh = ax.pcolormesh(x, y, data.values, vmin=min_max[0], vmax=min_max[1], cmap=cmap, alpha=0.75)
     else:
         mesh = ax.pcolormesh(x, y, data.values, vmin=np.nanmin(data.values),
                              vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
