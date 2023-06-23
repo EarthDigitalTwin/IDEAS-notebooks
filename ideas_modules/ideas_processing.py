@@ -154,18 +154,20 @@ def hofmoeller(base_url: str, dataset: str, bb: dict, start_time: datetime, end_
     return hofmoeller_prep(resp, dim)
 
 
-def insitu(base_url: str, provider: str, project: str, bb: str, start_time: datetime, end_time: datetime, var: str) -> pd.DataFrame:
+def insitu(base_url: str, provider: str, project: str, bb: str, start_time: datetime, end_time: datetime) -> pd.DataFrame:
     results = []
     base_url = base_url.replace('/nexus', '')
     next_url = f'{base_url}/insitu/1.0/query_data_doms_custom_pagination?startIndex=0&itemsPerPage=10000&' \
         f'provider={provider}&project={project}&startTime={datetime.strftime(start_time, "%Y-%m-%dT%H:%M:%SZ")}&' \
-        f'endTime={datetime.strftime(end_time, "%Y-%m-%dT%H:%M:%SZ")}&bbox={bb}&variable={var}'
+        f'endTime={datetime.strftime(end_time, "%Y-%m-%dT%H:%M:%SZ")}&bbox={bb}'
 
     while next_url:
         print(next_url)
         res = requests.get(next_url)
+        if not res.json():
+            return pd.DataFrame()
         results.append(res.json())
-        if 'next' in res.json().keys() and res.json()['next'] != next_url:
+        if 'next' in res.json().keys() and res.json()['next'] != next_url and res.json()['next'] != 'NA':
             next_url = res.json()['next']
         else:
             break
@@ -183,6 +185,11 @@ def prep_insitu(results: List) -> pd.DataFrame:
         if 'results' in r.keys():
             all_results.extend(r['results'])
     df = pd.DataFrame(all_results)
+    df = df.dropna(axis=1, how='all')
+    df.time = pd.to_datetime(df.time)
+    df.time = df.time.dt.tz_localize(None)
+    df = pd.concat([df.drop(['platform'], axis=1), df['platform'].apply(pd.Series)], axis=1)
+    df = df.sort_values(by=['id', 'time'])
     return df
 
 

@@ -42,7 +42,23 @@ def timeseries_plot(data: List[Tuple[xr.DataArray, str]], x_label: str, y_label:
     plt.legend(prop={'size': 12})
     plt.show()
 
+def timeseries_bands_plot(da, var_label, x_label, y_label, title):
+    plt.figure(figsize=(12, 5))
 
+    plt.fill_between(da['time'], da['mean'] - da['std'], da['mean'] + da['std'], alpha=.25)
+    plt.plot(da['time'], da['mean'], linewidth=2, label=textwrap.fill(var_label, 50))
+
+    plt.grid(visible=True, which='major', color='k', linestyle='-')
+    plt.xlabel(x_label, fontsize=12)
+    plt.ylabel(y_label, fontsize=12)
+    plt.gcf().autofmt_xdate()
+    # plt.gca().xaxis.set_major_formatter(dates.ConciseDateFormatter(plt.gca().xaxis.get_major_locator()))
+    plt.xticks(rotation=45)
+    plt.title(title, fontsize=16)
+    plt.legend(prop={'size': 12})
+    plt.show()
+    
+    
 def plot_insitu(data: List[Tuple[pd.DataFrame, str, str]], title: str, ylabel='m3/s', norm=False):
     fig = plt.figure(figsize=(12, 5))
 
@@ -168,6 +184,31 @@ def map_data(data: xr.DataArray, title: str, cmap='rainbow', cb_label='', log_sc
     plt.show()
 
 
+def map_scenario_data(data_list: List[xr.DataArray], titles: List[str], cmap='rainbow', cb_label='', log_scale=False, padding=2.5):
+    '''
+    Plots data on map
+    '''
+    # fig2.axes.append(ax)
+    for i, data in enumerate(data_list):        
+        bounds = {
+            'min_lon': data.lon.min(),
+            'max_lon': data.lon.max(),
+            'min_lat': data.lat.min(),
+            'max_lat': data.lat.max()
+        }
+        ax = base_map(bounds, padding)
+        x, y = np.meshgrid(data.lon, data.lat)
+        if log_scale:
+            mesh = ax.pcolormesh(x, y, data.values, norm=colors.LogNorm(), cmap=cmap, alpha=0.75)
+        else:
+            mesh = ax.pcolormesh(x, y, data.values, vmin=np.nanmin(data.values),
+                                vmax=np.nanmax(data.values), cmap=cmap, alpha=0.75)
+        cb = plt.colorbar(mesh)
+        cb.set_label(cb_label)
+        plt.title(titles[i])
+    plt.show()
+    
+    
 def heatmap(data: xr.DataArray, x_label: str, y_label: str, title='', cmap='rainbow'):
     '''
     Plots colormesh heatmap

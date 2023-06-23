@@ -6,15 +6,6 @@ The `Flood_Demo.ipynb` notebook highlights some of the analytics and visualizati
 - France storm in January 2022
 - LIS model data over the Mississippi river basin
 
-The `AirQuality_demo.ipynb` notebook highlights some of the analytics and visualization capabilities of AQACF with six use cases:
-- 2021 Alisal Wildfire
-- 2021 California Wildfires
-- 2018 Carr Wildfire
-- Los Angeles ports backlog Fall 2021
-- Fireworks during 4th of July 2022 in Los Angeles county
-- Air Pollution in the Yellow Sea
-- 2022 Fire Season in Southeast Asia
-
 __Requirements__  
 
 * conda >= 22.9.0  
@@ -23,7 +14,7 @@ __Requirements__
 
 __Running the notebook__  
 
-To run the `Flood_Demo.ipynb` or `AirQuality_demo.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
+To run the `Flood_Demo.ipynb` notebook, run the following commands that create a conda environment called `ideas_notebook` using the `environment.yml` file to include all required dependencies, and install the environment as a kernelspec:
 ```
 conda env create -f environment.yml
 conda activate ideas_notebook
