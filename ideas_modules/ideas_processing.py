@@ -197,7 +197,7 @@ def prep_ts(ts_json: dict) -> xr.Dataset:
     '''
     Formats timeseriesspark response into xarray dataset object
     '''
-    time = np.array([np.datetime64(ts[0]["iso_time"][:10])
+    time = np.array([np.datetime64(ts[0]["iso_time"][:19])
                     for ts in ts_json["data"]])
     means = np.array([ts[0]["mean"] for ts in ts_json["data"]])
     mins = np.array([ts[0]["min"] for ts in ts_json["data"]])
