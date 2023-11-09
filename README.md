@@ -1,11 +1,14 @@
 # IDEAS Digital Twin Notebooks 
 
-The `Flood_Demo.ipynb` notebook highlights some of the analytics and visualization capabilities of IDEAS with four use cases:
+The `Flood_Demo.ipynb` notebook highlights some of the analytics and visualization capabilities of IDEAS with the following use cases:
+- South Korea flooding in July, 2023
 - Pakistan flooding occurring from June through September, 2022
 - Hurricane Ian as it makes landfall over Florida in September, 2022
-- France storm in January 2022
-- LIS model data over the Mississippi river basin
-
+- France storm in January, 2022
+- Flooding in Mississippi river basin in January, 2020
+    - Includes 1x, 2x, and 3x precipitation scenarios, LIS NoahMP model data, and RAPID river discharge
+- Flooding in Garonne in January, 2021
+    - Includes 1x, 2x, and 3x precipitation scenarios, LIS NoahMP model data, RAPID river discharge, , and Telemac2d data that highlights the flow of LIS NoahMP model -> RAPID model -> Telemac2d model
 __Requirements__  
 
 * conda >= 22.9.0  
